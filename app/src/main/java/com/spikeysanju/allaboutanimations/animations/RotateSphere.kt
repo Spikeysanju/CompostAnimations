@@ -17,6 +17,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
 import androidx.compose.material.MaterialTheme
+import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -37,20 +38,37 @@ import androidx.compose.ui.input.pointer.pointerInteropFilter
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import com.spikeysanju.allaboutanimations.R
+import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalComposeUiApi::class)
 @Composable
-fun SpinSphere(
+fun RotateSphere(
     modifier: Modifier = Modifier,
     ringColor: Color,
     circleColor: Color,
 ) {
 
+    val angle = remember {
+        Animatable(0f)
+    }
+
+
     // button state
     val selected = remember { mutableStateOf(false) }
+    val animateRing = remember { Animatable(300f) }
+
+    val spinCount = remember { mutableStateOf(400) }
     val circleScale = animateFloatAsState(if (selected.value) 0.8f else 1.2f)
     val iconScale = animateFloatAsState(if (selected.value) 1f else 1.5f)
     val speed = remember { mutableStateOf(100) }
+
+
+    val spinAnimation: Float by animateFloatAsState(
+        targetValue = 360F,
+        animationSpec = infiniteRepeatable(
+            animation = tween(2000, easing = LinearEasing),
+        )
+    )
 
 
     // Ring rotate animation
@@ -67,17 +85,28 @@ fun SpinSphere(
         initialValue = 0f,
         targetValue = 360f,
         animationSpec = infiniteRepeatable(
-            animation = tween(2000, easing = LinearEasing),
+            animation = tween(animateRing.value.toInt(), easing = LinearEasing),
         )
     )
 
     // Ring grow animation
     val animateFloat = remember { Animatable(0f) }
-    LaunchedEffect(animateFloat) {
-        animateFloat.animateTo(
-            targetValue = 1f,
-            animationSpec = tween(durationMillis = 3000, easing = LinearEasing)
-        )
+    LaunchedEffect(animateFloat, spinCount, angle) {
+
+        launch {
+            animateFloat.animateTo(
+                targetValue = 1f,
+                animationSpec = tween(durationMillis = 3000, easing = LinearEasing)
+            )
+        }
+
+//        launch {
+//            angle.animateTo(
+//                targetValue = 340f, animationSpec = infiniteRepeatable(
+//                    animation = tween(spinCount.value, easing = LinearEasing),
+//                )
+//            )
+//        }
     }
 
     Box(modifier = modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
@@ -136,46 +165,14 @@ fun SpinSphere(
 
                 }
 
-
-//                rotate(strokeOne) {
-//                    drawRoundRect(
-//                        size = canvasSize / 5F,
-//                        color = Color.Red,
-//                        cornerRadius = CornerRadius(16.dp.toPx())
-//                    )
-//                }
-//
-//                rotate(strokeTwo) {
-//                    drawRoundRect(
-//                        size = canvasSize / 5F,
-//                        color = Color.Yellow,
-//                        cornerRadius = CornerRadius(16.dp.toPx())
-//                    )
-//                }
-//
-//                rotate(strokeThree) {
-//                    drawRoundRect(
-//                        size = canvasSize / 5F,
-//                        color = Color.Green,
-//                        cornerRadius = CornerRadius(16.dp.toPx())
-//                    )
-//                }
-
-//                // circle
-//                drawCircle(
-//                    color = circleColor,
-//                    center = Offset(canvasWidth / 2f, canvasHeight / 2f),
-//                    radius = canvasWidth / 2f
-//                )
-
-
             }
             .clip(CircleShape), contentAlignment = Alignment.Center
         ) {
 
 
             IconButton(onClick = {
-                speed.value = 1000
+
+                // todo: add onclick listener
             },
                 modifier = modifier
                     .scale(iconScale.value)
@@ -188,6 +185,7 @@ fun SpinSphere(
                         when (it.action) {
                             MotionEvent.ACTION_DOWN -> {
                                 selected.value = true
+                                spinCount.value = spinCount.value + 100
                             }
 
                             MotionEvent.ACTION_UP -> {
@@ -197,6 +195,8 @@ fun SpinSphere(
                         true
                     }) {
 
+                Text(text = "Spin count: ${spinCount.value}")
+
                 Icon(
                     painter = painterResource(id = R.drawable.ic_flame),
                     contentDescription = null,
@@ -205,8 +205,6 @@ fun SpinSphere(
                     tint = color
                 )
             }
-
-
         }
     }
 }

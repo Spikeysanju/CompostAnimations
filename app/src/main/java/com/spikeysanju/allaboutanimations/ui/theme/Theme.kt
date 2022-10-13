@@ -10,14 +10,17 @@ private val DarkColorPalette = darkColors(
     background = dark,
     surface = midnightExpress,
     primary = glitterLake,
-    onPrimary = flame
+    onPrimary = flame,
+    onSecondary = lime
 )
 
 private val LightColorPalette = lightColors(
     background = dark,
     surface = midnightExpress,
     primary = glitterLake,
-    onPrimary = flame
+    onPrimary = flame,
+    onSecondary = lime
+
     /* Other default colors to override
     background = Color.White,
     surface = Color.White,
